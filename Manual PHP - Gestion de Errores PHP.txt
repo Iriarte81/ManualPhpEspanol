@@ -1,0 +1,216 @@
+GESTION DE ERRORES EN PHP5
+
+Errores y Excepciones
+
+Una excepción es una condicion que se experimenta en un programa inesperadamente y no puede ser manejada por el código que hemos escrito. Debe tomar tiempo para determinar si necesita crear sus propios métodos de manejo de errores y si es así, verá que a la larga resulta más gratificante. Las excepciones permiten distinguir entre distintos tipos de errores y manejarlos dependiendo de su naturaleza.
+
+La clase exception caputra los errores y muestra un mensaje de error personalizado. Ejemplo:
+
+<?php
+//extraemos el usuario por GET
+$usuario_id = $_GET['usuario_id'];
+//Si existe el usuario escribimos el mensaje CORRECTO
+try {
+	if (!usuario_valido($usuario_id)) {
+		echo “ERROR: El usuario $usuario_id no existe”;
+}	else {
+		echo “CORRECTO: El usuario $usuario_id existe”;
+}
+}	catch(Exception $ex) {
+	//Devuleve el mensaje de error
+	$mensaje = ($ex ->getMessage());
+	echo $mensaje;
+}
+
+
+function usuario_valido($usuario_id) {
+	$cadena = “usr”;
+	//Comprobaciones de usuario
+	if ((strstr($usuario_id,$cadena) == false) I
+		(strpos($usuario_id,$cadena) != 0)) {
+			throw new Exception (“$usuario_id no contiene el prefijo”);
+			}
+
+	if (strlen($usuario_id) <9) {
+			throw new Exception (“El tamaño de $usuario_id es menor a 9 caracteres”);
+			}
+	if (!existe_base_datos($usuario_id)) {
+			return false;
+	}	else {
+			return false;
+	}
+}
+
+Los errores que no se controlen con el flujo normal del programa son utilizados como excepciones separadas del resto de la aplicación.
+
+
+BLOQUE TRY / CATCH
+
+Las excepciones son controladas por el bloque try / catch. Todo el codigo que escriba y que pueda generar un error, se escribira dentro del bloque try. Si dentro de este bloque se encuentra un error, la ejecución del código se para y se pasa el control al bloque catch. Este bloque se consulta para encontrar la excepción que ha producido el error.
+
+
+<?php
+try {
+	throw new Exception (“Error de sintaxis”);
+} 
+catch (Exception $ex) {
+// Mensaje de error
+$mensaje = ($ex->getMessage());
+// Código de error configurable
+$codigo = ($ex->getCode());
+// Fichero del error
+$fichero = ($ex->getFile());
+// Linea donde se ha producido el error
+$linea = ($ex->getLine());
+
+echo “Error número $codigo: $mensaje en el fichero $fichero en la linea $linea”;
+}
+?>
+
+El siguiente ejemplo muestra como crear clases propias que manejan errores a partir de la clase Exception
+
+<?php
+$usuario_id = $_GET['$usuario_id'];
+try {
+	if (!usuario_valido($usuario_id)){
+		echo “ERROR: El usuario $usuario_id no existe”;
+	} else {
+		echo “CORRECTO: El usuario $usuario_id existe”;
+	}
+}
+catch (MiExcepcion $ex) {
+	$cadena = “usr”;
+	if ((strstr($usuario_id,$cadena) == false) I
+		(strpos($usuario_id,$cadena) != 0)) {
+			$mensaje = $ex->getMessage();
+	}
+}
+catch (OtraExcepción $ex) {
+	if (strlen($usuario_id) <9) {
+			$mensaje = $ex ->getMessage();
+	}
+}
+
+//Definicion de las clases que heredan de Exception
+class MiExcepcion extends Excepción
+{
+	function__construct($mensaje)
+	{
+		parent::Exception($mensaje);
+	}
+}
+class OtraExcepcion extends Excepción
+	function__construct($mensaje)
+	{
+		parent::Exception($mensaje);
+	}
+}
+echo $mensaje;
+
+function usuario_valido($usuario_id) {
+	$cadena = “usr”;
+	if ((strstr($usuario_id,$cadena) == false) II
+		(strpos($usuario_id,$cadena) != 0)) {
+			throw new MiExcepcion (“usuario $usuario_id no contiene el prefijo”);
+			}
+
+	if (strlen($usuario_id) <9) {
+			throw new OtraExcepcion (“El tamaño de $usuario_id es menor a 9 caracteres”);
+	}
+}
+?>
+
+GESTION DE ERRORES – PARTE 2
+
+CONTROL DE ERRORES SIN EXCEPCIONES
+
+1. ERRORES NATIVOS DE PHP
+
+PHP genera 3 tipos de error
+
+Notice: No son errores severos, no se muestran en pantalla por lo general, a menos que digamos lo contrario en el archivo configuracionphp.ini
+
+Warning: Alguna parte del codigo ha causado error, pero la ejecución continua.
+
+Fatal Error: Un problema serio que hace abortar la ejecución del programa.
+
+Cada tipo de error es representado por una constante: E_USER_NOTICE, E_USER_WARNING, y E_USER_ERROR. Puede elegir el nivel de error que quiere mostrar en pantalla con la funcion error_reporting(). Asi:
+
+<?php
+// Mostrar errores fatales
+error_reporting(E_USER_ERROR);
+// Mostrar advertencias y notificaciones
+error_reporting(E_USER_NOTICE I E_USER_WARNING);
+// Mostrar todos los errores
+error_reporting(E_USER_ALL);
+?>
+
+
+2. CONTROLADORES DE ERROR
+
+Se puede crear una funcion que muestra el error producido pero con un diseño acorde a nuestra pagina web.
+
+<?php
+function errores($error,$mensaje, $fichero,$linea) {
+	echo “<b>::ERROR::</bxbr>”;
+	echo “Sentimos comunicarle que se ha producido un error”;
+	echo “Tipo de error: $error: $mensaje en $fichero en la linea $linea”;
+	}
+?>
+
+El paso siguiente es llamar a la funcion set_error_handler() para que PHP sepa que nuestra funcion errores() se va a encargar a partir de ahora de gestionar los posibles fallos en el flujo del programa
+
+<?php
+set_error_handler(“errores”);
+?>
+
+Con este codigo, todos los errores producidos del nivel que tenga permitido (fatal error, warning, notice) seran enviados a la funcion errores() para mostrar su mensaje particular.
+
+3. ERRORES DE USUARIO CON TRIGGER_ERROR()
+
+Es mejor usar la funcion trigger_error() con set_error_handler(). El error que creemos puede ser de cualquiera de los tres tipos que existen en php.
+
+Podemos usar una funcion para identificar los errores producidos por los usuarios, muy parecida a la funcion throw(). La funcion trigger_error genera un error del tipo que quiera (de los 3 tipos) y será gestionado por PHP o por su propio gestor de errores.
+
+<?php
+error_reporting(E_ALL)
+function errores($error,$mensaje, $fichero,$linea) {
+	echo “<b>::ERROR::</bxbr>”;
+	echo “Sentimos comunicarle que se ha producido un error”;
+	echo “Tipo de error: $error: $mensaje en $fichero en la linea $linea”;
+}
+set_error_handler(“errores”);
+
+if (1 != 0) {
+	trigger_error(“Esto es falso”, E_USER_NOTICE);
+}
+?>
+
+4. DEPURACIÓN DE ERRORES
+
+La funcion error_log() crea un archivo donde se iran almacenando las ocurrencias de su codigo. Con el siguiente codigo podra capturar todos los errores producidos en el programa, para despues hacer un estudio de lo que ha pasado.
+
+<?php
+try {
+	if ($usuario != “Luis”) {
+		throw new Exception (“El usuario no existe”);
+	}
+}
+catch (Exception $ex) {
+	$mensaje = ($ex ? getMessage());
+	$codigo = ($ex ? getCode());
+	$fichero = ($ex ? getFile());
+	$linea = ($ex ? getLine());
+	$log_mensaje = date (“H:i d-m-Y”) . “Error:: $codigo en $fichero en la linea $linea. Error $mensaje”;
+
+	error_log($log_mensaje, 3, “/Users/luis/Sites/error.log”);
+	echo $log_mensaje;
+}
+?>
+
+La funcion error_log puede pasar como segundo parametro un numero entero que identifica el tipo de error y que hacer con el:
+
+0: Se utiliza el mecanismo del sistema operativo
+1: Evnia el error a una dirección de correo especificada como cuatro parametro (Debe formar parte de la cabecera)
+2: Envia el error a traves de una sesion de depuración en PHP (Debe estar habilitado el modo depuración)
+3: Envia el error a un fichero 

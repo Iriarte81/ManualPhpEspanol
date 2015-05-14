@@ -1,0 +1,491 @@
+SQL
+
+Para conectarse a SQL, 
+
+<?php
+$servidor = “localhost”;
+$usuario = “luis”;
+$pass = “secreto”;
+$base_datos = “compras”;
+$mysqli = new mysqli("$servidor", "$usuario", "$pass", "$base_datos");
+if ($mysqli->connect_errno) {
+    echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
+}
+
+Para cerrar conexión: 
+
+Object oriented style
+mysqli::close ()
+
+Procedural style
+mysqli_close ( mysqli $mysqli )
+
+Para ver un ejemplo de como crear un clase reutilizable en todos los proyectos que sirva para conectarse a una base de datos ver pags. 221 y 222
+
+Para recuperar datos utlizamos
+
+mysqli::query
+mysqli_query
+
+(PHP 5)
+mysqli::query -- mysqli_query — Performs a query on the database
+
+Description ¶
+
+Object oriented style
+
+mixed mysqli::query ( string $query [, int $resultmode = MYSQLI_STORE_RESULT ] )
+Procedural style
+
+mixed mysqli_query ( mysqli $link , string $query [, int $resultmode = MYSQLI_STORE_RESULT ] )
+Performs a query against the database.
+
+For non-DML queries (not INSERT, UPDATE or DELETE), this function is similar to calling mysqli_real_query() followed by either mysqli_use_result() or mysqli_store_result().
+
+Parameters
+
+link
+Procedural style only: A link identifier returned by mysqli_connect() or mysqli_init()
+
+query
+The query string.
+
+Data inside the query should be properly escaped.
+
+resultmode
+Either the constant MYSQLI_USE_RESULT or MYSQLI_STORE_RESULT depending on the desired behavior. By default, MYSQLI_STORE_RESULT is used.
+
+If you use MYSQLI_USE_RESULT all subsequent calls will return error Commands out of sync unless you call mysqli_free_result()
+
+With MYSQLI_ASYNC (available with mysqlnd), it is possible to perform query asynchronously. mysqli_poll() is then used to get results from such queries.
+
+Return Values
+
+Returns FALSE on failure. For successful SELECT, SHOW, DESCRIBE or EXPLAIN queries mysqli_query() will return a mysqli_result object. For other successful queries mysqli_query() will return TRUE.
+
+
+mysqli_result::fetch_array
+mysqli_fetch_array
+
+(PHP 5)
+mysqli_result::fetch_array -- mysqli_fetch_array — Fetch a result row as an associative, a numeric array, or both
+
+Description
+
+Object oriented style
+
+mixed mysqli_result::fetch_array ([ int $resulttype = MYSQLI_BOTH ] )
+Procedural style
+
+mixed mysqli_fetch_array ( mysqli_result $result [, int $resulttype = MYSQLI_BOTH ] )
+Returns an array that corresponds to the fetched row or NULL if there are no more rows for the resultset represented by the result parameter.
+
+mysqli_fetch_array() is an extended version of the mysqli_fetch_row() function. In addition to storing the data in the numeric indices of the result array, the mysqli_fetch_array() function can also store the data in associative indices, using the field names of the result set as keys.
+
+
+ESCAPING STRINGS
+
+mysqli::real_escape_string
+mysqli_real_escape_string
+
+(PHP 5)
+mysqli::real_escape_string -- mysqli_real_escape_string — Escapes special characters in a string for use in an SQL statement, taking into account the current charset of the connection
+
+Description ¶
+
+Object oriented style
+
+string mysqli::escape_string ( string $escapestr )
+string mysqli::real_escape_string ( string $escapestr )
+Procedural style
+
+string mysqli_real_escape_string ( mysqli $link , string $escapestr )
+This function is used to create a legal SQL string that you can use in an SQL statement. The given string is encoded to an escaped SQL string, taking into account the current character set of the connection.
+
+Caution
+Security: the default character set
+
+The character set must be set either at the server level, or with the API function mysqli_set_charset() for it to affect mysqli_real_escape_string(). See the concepts section on character sets for more information.
+Parameters ¶
+
+link
+Procedural style only: A link identifier returned by mysqli_connect() or mysqli_init()
+
+escapestr
+The string to be escaped.
+
+Characters encoded are NUL (ASCII 0), \n, \r, \, ', ", and Control-Z.
+
+Return Values ¶
+
+Returns an escaped string.
+
+Examples ¶
+
+Example #1 mysqli::real_escape_string() example
+
+Object oriented style
+
+<?php
+$mysqli = new mysqli("localhost", "my_user", "my_password", "world");
+
+/* check connection */
+if (mysqli_connect_errno()) {
+    printf("Connect failed: %s\n", mysqli_connect_error());
+    exit();
+}
+
+$mysqli->query("CREATE TEMPORARY TABLE myCity LIKE City");
+
+$city = "'s Hertogenbosch";
+
+/* this query will fail, cause we didn't escape $city */
+if (!$mysqli->query("INSERT into myCity (Name) VALUES ('$city')")) {
+    printf("Error: %s\n", $mysqli->sqlstate);
+}
+
+$city = $mysqli->real_escape_string($city);
+
+/* this query with escaped $city will work */
+if ($mysqli->query("INSERT into myCity (Name) VALUES ('$city')")) {
+    printf("%d Row inserted.\n", $mysqli->affected_rows);
+}
+
+$mysqli->close();
+?>
+Procedural style
+
+<?php
+$link = mysqli_connect("localhost", "my_user", "my_password", "world");
+
+/* check connection */
+if (mysqli_connect_errno()) {
+    printf("Connect failed: %s\n", mysqli_connect_error());
+    exit();
+}
+
+mysqli_query($link, "CREATE TEMPORARY TABLE myCity LIKE City");
+
+$city = "'s Hertogenbosch";
+
+/* this query will fail, cause we didn't escape $city */
+if (!mysqli_query($link, "INSERT into myCity (Name) VALUES ('$city')")) {
+    printf("Error: %s\n", mysqli_sqlstate($link));
+}
+
+$city = mysqli_real_escape_string($link, $city);
+
+/* this query with escaped $city will work */
+if (mysqli_query($link, "INSERT into myCity (Name) VALUES ('$city')")) {
+    printf("%d Row inserted.\n", mysqli_affected_rows($link));
+}
+
+mysqli_close($link);
+?>
+The above examples will output:
+
+Error: 42000
+1 Row inserted.
+
+
+COUNTING ROWS
+
+mysqli_result::$num_rows
+mysqli_num_rows
+
+(PHP 5)
+mysqli_result::$num_rows -- mysqli_num_rows — Gets the number of rows in a result
+
+Description ¶
+
+Object oriented style
+
+int $mysqli_result->num_rows;
+Procedural style
+
+int mysqli_num_rows ( mysqli_result $result )
+Returns the number of rows in the result set.
+
+The behaviour of mysqli_num_rows() depends on whether buffered or unbuffered result sets are being used. For unbuffered result sets, mysqli_num_rows() will not return the correct number of rows until all the rows in the result have been retrieved.
+
+Parameters ¶
+
+result
+Procedural style only: A result set identifier returned by mysqli_query(), mysqli_store_result() or mysqli_use_result().
+
+Return Values ¶
+
+Returns number of rows in the result set.
+
+Note:
+If the number of rows is greater than PHP_INT_MAX, the number will be returned as a string.
+Examples ¶
+
+Example #1 Object oriented style
+
+<?php
+$mysqli = new mysqli("localhost", "my_user", "my_password", "world");
+
+/* check connection */
+if (mysqli_connect_errno()) {
+    printf("Connect failed: %s\n", mysqli_connect_error());
+    exit();
+}
+
+if ($result = $mysqli->query("SELECT Code, Name FROM Country ORDER BY Name")) {
+
+    /* determine number of rows result set */
+    $row_cnt = $result->num_rows;
+
+    printf("Result set has %d rows.\n", $row_cnt);
+
+    /* close result set */
+    $result->close();
+}
+
+/* close connection */
+$mysqli->close();
+?>
+Example #2 Procedural style
+
+<?php
+$link = mysqli_connect("localhost", "my_user", "my_password", "world");
+
+/* check connection */
+if (mysqli_connect_errno()) {
+    printf("Connect failed: %s\n", mysqli_connect_error());
+    exit();
+}
+
+if ($result = mysqli_query($link, "SELECT Code, Name FROM Country ORDER BY Name")) {
+
+    /* determine number of rows result set */
+    $row_cnt = mysqli_num_rows($result);
+
+    printf("Result set has %d rows.\n", $row_cnt);
+
+    /* close result set */
+    mysqli_free_result($result);
+}
+
+/* close connection */
+mysqli_close($link);
+?>
+The above examples will output:
+
+Result set has 239 rows.
+
+mysqli::$affected_rows
+mysqli_affected_rows
+
+(PHP 5)
+mysqli::$affected_rows -- mysqli_affected_rows — Gets the number of affected rows in a previous MySQL operation
+
+Description ¶
+
+Object oriented style
+
+int $mysqli->affected_rows;
+Procedural style
+
+int mysqli_affected_rows ( mysqli $link )
+Returns the number of rows affected by the last INSERT, UPDATE, REPLACE or DELETE query.
+
+For SELECT statements mysqli_affected_rows() works like mysqli_num_rows().
+
+Parameters ¶
+
+link
+Procedural style only: A link identifier returned by mysqli_connect() or mysqli_init()
+
+Return Values ¶
+
+An integer greater than zero indicates the number of rows affected or retrieved. Zero indicates that no records were updated for an UPDATE statement, no rows matched the WHERE clause in the query or that no query has yet been executed. -1 indicates that the query returned an error.
+
+Note:
+If the number of affected rows is greater than the maximum integer value( PHP_INT_MAX ), the number of affected rows will be returned as a string.
+Examples ¶
+
+Example #1 $mysqli->affected_rows example
+
+Object oriented style
+
+<?php
+$mysqli = new mysqli("localhost", "my_user", "my_password", "world");
+
+/* check connection */
+if (mysqli_connect_errno()) {
+    printf("Connect failed: %s\n", mysqli_connect_error());
+    exit();
+}
+
+/* Insert rows */
+$mysqli->query("CREATE TABLE Language SELECT * from CountryLanguage");
+printf("Affected rows (INSERT): %d\n", $mysqli->affected_rows);
+
+$mysqli->query("ALTER TABLE Language ADD Status int default 0");
+
+/* update rows */
+$mysqli->query("UPDATE Language SET Status=1 WHERE Percentage > 50");
+printf("Affected rows (UPDATE): %d\n", $mysqli->affected_rows);
+
+/* delete rows */
+$mysqli->query("DELETE FROM Language WHERE Percentage < 50");
+printf("Affected rows (DELETE): %d\n", $mysqli->affected_rows);
+
+/* select all rows */
+$result = $mysqli->query("SELECT CountryCode FROM Language");
+printf("Affected rows (SELECT): %d\n", $mysqli->affected_rows);
+
+$result->close();
+
+/* Delete table Language */
+$mysqli->query("DROP TABLE Language");
+
+/* close connection */
+$mysqli->close();
+?>
+Procedural style
+
+<?php
+$link = mysqli_connect("localhost", "my_user", "my_password", "world");
+
+if (!$link) {
+    printf("Can't connect to localhost. Error: %s\n", mysqli_connect_error());
+    exit();
+}
+
+/* Insert rows */
+mysqli_query($link, "CREATE TABLE Language SELECT * from CountryLanguage");
+printf("Affected rows (INSERT): %d\n", mysqli_affected_rows($link));
+
+mysqli_query($link, "ALTER TABLE Language ADD Status int default 0");
+
+/* update rows */
+mysqli_query($link, "UPDATE Language SET Status=1 WHERE Percentage > 50");
+printf("Affected rows (UPDATE): %d\n", mysqli_affected_rows($link));
+
+/* delete rows */
+mysqli_query($link, "DELETE FROM Language WHERE Percentage < 50");
+printf("Affected rows (DELETE): %d\n", mysqli_affected_rows($link));
+
+/* select all rows */
+$result = mysqli_query($link, "SELECT CountryCode FROM Language");
+printf("Affected rows (SELECT): %d\n", mysqli_affected_rows($link));
+
+mysqli_free_result($result);
+
+/* Delete table Language */
+mysqli_query($link, "DROP TABLE Language");
+
+/* close connection */
+mysqli_close($link);
+?>
+The above examples will output:
+
+Affected rows (INSERT): 984
+Affected rows (UPDATE): 168
+Affected rows (DELETE): 815
+Affected rows (SELECT): 169
+
+
+Cuando utilice campos auto numericos en una tabla e inserte un nuevo registro sera util conocer el numero de la ultima fila insertada
+
+
+mysqli::$insert_id
+mysqli_insert_id
+
+(PHP 5)
+mysqli::$insert_id -- mysqli_insert_id — Returns the auto generated id used in the last query
+
+Description ¶
+
+Object oriented style
+
+mixed $mysqli->insert_id;
+Procedural style
+
+mixed mysqli_insert_id ( mysqli $link )
+The mysqli_insert_id() function returns the ID generated by a query on a table with a column having the AUTO_INCREMENT attribute. If the last query wasn't an INSERT or UPDATE statement or if the modified table does not have a column with the AUTO_INCREMENT attribute, this function will return zero.
+
+Note:
+Performing an INSERT or UPDATE statement using the LAST_INSERT_ID() function will also modify the value returned by the mysqli_insert_id() function.
+Parameters ¶
+
+link
+Procedural style only: A link identifier returned by mysqli_connect() or mysqli_init()
+
+Return Values ¶
+
+The value of the AUTO_INCREMENT field that was updated by the previous query. Returns zero if there was no previous query on the connection or if the query did not update an AUTO_INCREMENT value.
+
+Note:
+If the number is greater than maximal int value, mysqli_insert_id() will return a string.
+Examples ¶
+
+Example #1 $mysqli->insert_id example
+
+Object oriented style
+
+<?php
+$mysqli = new mysqli("localhost", "my_user", "my_password", "world");
+
+/* check connection */
+if (mysqli_connect_errno()) {
+    printf("Connect failed: %s\n", mysqli_connect_error());
+    exit();
+}
+
+$mysqli->query("CREATE TABLE myCity LIKE City");
+
+$query = "INSERT INTO myCity VALUES (NULL, 'Stuttgart', 'DEU', 'Stuttgart', 617000)";
+$mysqli->query($query);
+
+printf ("New Record has id %d.\n", $mysqli->insert_id);
+
+/* drop table */
+$mysqli->query("DROP TABLE myCity");
+
+/* close connection */
+$mysqli->close();
+?>
+Procedural style
+
+<?php
+$link = mysqli_connect("localhost", "my_user", "my_password", "world");
+
+/* check connection */
+if (mysqli_connect_errno()) {
+    printf("Connect failed: %s\n", mysqli_connect_error());
+    exit();
+}
+
+mysqli_query($link, "CREATE TABLE myCity LIKE City");
+
+$query = "INSERT INTO myCity VALUES (NULL, 'Stuttgart', 'DEU', 'Stuttgart', 617000)";
+mysqli_query($link, $query);
+
+printf ("New Record has id %d.\n", mysqli_insert_id($link));
+
+/* drop table */
+mysqli_query($link, "DROP TABLE myCity");
+
+/* close connection */
+mysqli_close($link);
+?>
+The above examples will output:
+
+New Record has id 1.
+
+
+BUSQUEDAS DENTRO DE UNA TABLA
+
+SELECT * FROM usuario WHERE nombre LIKE '%Luis%'
+
+el simbolo % es un comodin, puede sustituir cualquier carácter dentro de la columna que busque, esta es la forma de buscar ocurrencias en una columna.
+
+CREACION Y ELIMINACION DE BASES DE DATOS Y TABLAS
+
+utilizar la funcion mysqli_query() y hacer la creacion o eliminacion con comandos SQL.
+
+

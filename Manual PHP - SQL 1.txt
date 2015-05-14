@@ -1,0 +1,218 @@
+SQL 1
+
+SENTENCIAS BÁSICAS
+
+
+SELECT
+
+SELECT campo1, campo2, campo3 FROM tabla WHERE condicion
+
+SELECT nombre FROM usuario WHERE id_usuario > 2
+
+SELECT * FROM usuario
+
+SELECT count(*) FROM usuario
+
+devuelve el valor 4, el numero de usuarios dados de alta
+
+SELECT * FROM usuario, carrito
+
+devuelve la union de tablas usuario y carrito cuyo resultado tiene la suma de las columnas y la multiplicacion de las filas
+
+SELECT * FROM usuario, carrito WHERE usuario.id_usuario = carrito.id_usuario;
+
+como las dos tablas tienen el mismo nombre para la columna id_usuario anteponemos el nombre de la tabla. En este ejemplo eliminamos filas repetidas usando una sentencia que relaciona las dos tablas
+
+SELECT nombre FROM usuario, carrito WHERE usuario.id_usuario = carrito.id_usuario AND id_producto = 1;
+
+el resultado es el nombre de los usuarios que han comprado el producto 1
+
+INSERT
+
+INSERT INTO tabla (columna1, columna2, columna3...) VALUES (valor1, valor2, valor3);
+
+INSERT INTO usuario (id_usuario, nombre, cuenta) VALUES (5, “Feo Jose”, 7898)
+
+para insertar un nuevo cliente en la tabla de usuario
+
+UPDATE
+
+UPDATE tabla SET campo1 = valor1, campo2 = valor2, campo3 = valor3 WHERE condicion;
+
+si no ponemos nada se supone que la actualizacion de datos se hace sobre todas las filas de la tabla por eso es necesario poner una condicion
+
+UPDATE usuario SET cuenta = 4455 WHERE id_usuario = 2;
+
+lo que hemos hecho es cambiar el numero de cuenta del usuario cuya cuenta es 4455 de su valor previo a 4455
+
+
+DELETE
+
+DELETE FROM tabla WHERE condicion;
+
+si se omite la clausula where se borran todas las filas de una tabla
+
+DELETE FROM usuario WHERE nombre = “Javier”;
+
+
+CREATE
+
+define los campos de una tabla y el tipo de datos que se va a almacenar en cada columan
+
+CREATE TABLE tabla (columna1 tipo_dato, columna2 tipo_dato, columna3 tipo_dato);
+
+Los tipos de datos incluyen INT, INTEGER (entero grande), SMALL INT (entero pequeño), REAL, FLOAT (coma flotante), DEC, DECIMAL (decimal), CHAR(n), CHARACTER(n) (alfanumerico de longitud fija n), VARCHAR(n) (alfanumerico de longitud variable, como maximo n caracteres), DATE (fecha), TIME (hora), TIMESTAMP (instante, conjunto de fecha y hora en un momento determinado)
+
+
+CREATE TABLE usuario (id_usuario INTEGER, nombre CHAR(255) NOT NULL, cuenta INTEGER NOT NULL);
+
+La sentencia NOT NULL hace que los campos referenciados sean introducidos obligatoriamente.
+
+La clave primaria de una tabla es un identificador unico que se usa para relacionar una tabla con otra.
+
+CREATE TABLE usuario (id_usuario INTEGER PRIMARY KEY, nombre CHAR(255) NOT NULL, cuenta INTEGER NOT NULL);
+
+
+SQL LITE
+
+
+El siguiente ejemplo crea la base de dato de usuario e inserta las filas que estamos utilizando para aprender el lenguaje SQL
+
+<? php
+$base_datos = sqlite_single_open(“usuario.db”);
+$consulta = “CREATE TABLE suarioa (id_usuario PRIMARY KEY, nombre CHAR(255) NOT NULL, cuenta INTEGER NOT NULL)”;
+$sqlite_query ($base_datos, $consulta);
+consulta1 = “INSERT INTO usuario (id_usuario, nombre, cuenta) VALUES (1, \“Luis Miguel\”, 7011)”;
+consulta2 = “INSERT INTO usuario (id_usuario, nombre, cuenta) VALUES (2, \“Carlos\”, 7012)”;
+$sqlite_single_query($base_datos, $consulta1);
+$sqlite_single_query($base_datos, $consulta2);
+
+para simplificar usamos la funcion sqlite_query() que acepta mas de una linea de SQL.
+
+$consulta = “CREATE TABLE producto (id_producto INTEGER PRIMARY KEY, nombre CHAR(255) NOT NULL, precio INTEGER NOT NULL); INSERT INTO producto (id_producto, nombre, precio) VALUES (1, \”Raton”\, 6); INSERT INTO producto (id_producto, nombre, precio) VALUES (2, \”Portatil”\, 1000);INSERT INTO producto (id_producto, nombre, precio) VALUES (3, \”Libro PHP”\, 20);
+sqlite_query ($base_datos, $consulta)
+
+
+sqlite_open(), recibe como parametro la base de datos que se quiere abrir, si no existe, la crea
+sqlite_singel_query(), toma como parametros la base de datos creada con sqlite_open() y un literal con la sentencia SQL que queremos ejecutar.
+
+
+
+Los campos enteros que llevan asociada la sentencia PRIMARY KEY son automaticamente tratados como campos autoincrementales, y en la orden insert se puede omitir el valor porque SQLite le dara el valor correlativo a la fila que corresponda.
+
+sqlite_last_insert_rowid() nos permite saber el ultimo valor incremental que SQLite ha generado para asociar a una imagen, archivo o registro de tabla
+
+$utlimo_producto = sqlite_last_insert_rowid ($base_datos);
+sqlite_single_query ($base_datos; “INSERT INTO carrito (id_usuario, id_producto) VALUES (\”$id_usuario\”, \”$id_producto\”)”);
+
+en el ejemplo extaremo el ultimo producto introducido y se los inserta en la tabla de compras
+
+
+sqlite_changes() devuelve el numero de filas afectas por una consulta anterior
+
+sqlite_changes($base_datos);
+
+FINALMENTE
+
+la sentencia SELECT da como resultado un array de datos para utilizarlo, lo guardamos en una variable y utilizamos la funcion sqlit_fetch_array()
+
+Ej.
+
+<?php
+$base_datos = sqlite_open (“usuario.db”);
+$resultado = sqlite_query ($base_datos, “SELECT * FROM usuario”);
+if (!resultado) {
+ echo “Parece que hay un error”;
+} else {
+	while ($fila = sqlite_fetch_array($resultado)) {
+		foreach ($fila as $indice => $valor) {
+				echo “$indice: $valor<br>”;
+				}
+		}
+}
+?>
+
+Ahora, para acceder a cada columna del registro tenemos que hacer uso de la variable como si fuera un array asi $fila [“nombre”], $fila [“cuenta”], $fila[0], $fila[1].
+
+
+
+SQLITE ORIENTADO A OBJETOS
+
+
+SQLIte tiene un objeto para la interaccion con bases de datos, es SQLiteDatabase() y el constructor recibe como parametro la base de datos
+
+el metodo query() funciona igual sqlite_query(), pero solo recibe como parametro la consulta ya que la base de datos va implicita en el objeto
+el metodo valid() da true si existen valores que no se han mostrado
+el metodo current() nos da la fila actual de la consulta
+el metodo next() avanza en el registro de la consulta, veamos dos ejemplos
+
+<?php
+$base_datos = new SQLiteDatabase (“usuario.db”);
+$consulta = “CREATE TABLE usuario (id_usuario INTEGER PRIMARY KEY, nombre CHAR(255) NOT NULL, cuenta INTEGER NOT NULL);
+INSERT INTO usuario (id_usuario, nombre, cuenta) VALUES (1, \”Luis Miguel”\, 7011);
+INSERT INTO usuario (id_usuario, nombre, cuenta) VALUES (2, \”Pedro”\, 7211);
+INSERT INTO usuario (id_usuario, nombre, cuenta) VALUES (3, \”Javier”\, 3454);
+INSERT INTO usuario (id_usuario, nombre, cuenta) VALUES (4, \”Maria Fernanda”\, 0011);
+$base_datos ? query($consulta);
+?>
+
+<?php
+$base_datos = new SQLiteDatabase (“usuario.db”);
+$consulta = “SELECT * FROM usuario”;
+$resultado = $base_datos ? query($consulta);
+while ($resultado ? valid() ) {
+	$ fila = $resultado ? current();
+	echo $fila[0].”<br>”;
+	echo $fila[1].”<br>”;
+	echo $fila[2].”<br>”;
+	$resultado ? next(), *
+}
+?>
+
+
+FUNCIONES/METODOS DE ARRAY PARA RECUPERAR DATOS
+
+
+$resultado = $base_datos->ArrayQuery($consulta), devuelve un array de dos dimensiones (fila la primera, columna la segunda), puede acceder a los registros de la siguiente forma $resultado [0][1] $resultado [0][2]
+
+unbufferedQuery() devuleve las filas en forma de objeto
+
+Ej.
+
+<?php
+$base_datos = new SQLiteDatabase(“usuario.db”);
+$consulta = “SELECT * FROM usuario”;
+$resultado = $base_datos ? unbufferedQuery($consulta);
+foreach ($resultado as $valor) {
+	echo “$valor[0]<br>”;
+	echo “$valor[1]<br>”;
+	echo “$valor[2]<br>”;
+}
+?>
+
+Más metodos:
+
+numFields() devuelve el numero de campos deveultos en una consulta, para poder utilizarlo devemos recuperar los datos con la funcion unbufferedQuery() y el objeto devuelto sera el que le indique el numero de campos que almacena.
+
+Imagine que quiere saber cuantas filas devuelve un resultado
+
+Usuando unbufferedQuery() tenemos que hacer un bucle para contar una a una las filas del resultado, con la funcion query() solo hay que llamar al metodo numRows() para conocer el numero de registros implicados en la consulta.
+
+Query() nos permite recuerar la informacion en el orden que queramos, como en el siguiente ejemplo
+
+<?php
+$base_datos = new SQLiteDatabase(“usuario.db”);
+$consulta = “SELECT * FROM usuario”;
+$resultado = $base_datos ? query($consulta);
+$numero_filas = $resultado ? numRows();
+$resultado ? seek($numero_filas-1);
+do {
+	$fila = $resultado ? current();
+ 	foreach ($fila as $valor) {
+		echo “$valor<br>”;
+	}
+} while ($resultado ? hasPrev() && $resultado-> prev());
+?>
+
+
+seek() se mueve a traves del resultado y se posiciona en el registro que pasemos como parametro, hasPrev() es true si existe un registro previo y prev() es true si ha sido posible moverse a un registro anterior.

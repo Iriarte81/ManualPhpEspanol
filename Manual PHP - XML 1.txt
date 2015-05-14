@@ -1,0 +1,78 @@
+Xml
+
+xml define una estructura de documentos que pueden ser leidos por personas y ordenadores. Xml no tiene un diccionario de etiquetas, las etiquetas que aparecen son las que nosotros creamos. La unica norma que tenemos que seguir es que toda etiqueta de inicio debe tener una etiqueta de fin <coche> </coche>
+
+Reglas para xml
+
+Debe tener un unico elemento raiz, los elementos deben ser hereditarios <A x B x /B> </A>, esta bien, pero no <Ax Bx /Ax /Bx>, todos los elementos deben tener una etiqueta de cierre, los elementos pueden tener entre dos etiquetas cualquier tipo de contenido.
+
+
+Existen tres formas de archivos xml, son sax, dom y simplexml
+
+SAX
+
+xml_parse_create () crea el parse del archivo, es decir el analisis de los datos
+xml_set_object (), el archivo queda registrado en PHP como un objeto
+xml_set_handler(), , indica al parse que los eventos encargados de enconrar las etiquetas de inicio y fin seran manejadas con las funciones que se pasan como parametro.
+xml_parse(), inicia la secuencia de analisis
+xml_set_character_data_handler(), permite manejar el evento que se dispara cada vez que se encuentra un dato entre dos etiquetas
+
+DOM
+
+Esta API (application programming interface) define un completo camino para crear, definir y parsear archivos xml. DOM es una recomendación del World Wide Web Consortium.
+
+PHP5 implementa una clase DOM para representar archivos XML, llamada domDocument
+
+$biblioteca = new domDocument; instancia la clase
+
+preserveWhiteSpace = false; evita que los espacios entre etiqutas sean tratados como objetos de texto
+
+$biblioteca = load(“biblioteca.xml”); lee el archivo biblioteca.xml con el metodo load.
+
+GetElementsByTagname(), devuelve un conjunto de objetos que coinciden con la etiqueta que pase como parametro.
+
+Ej.
+$libros = $biblioteca ? getElementsByTagName(“libro”);
+
+Para imprimir todos los libros
+foreach ($libros as $libro) {
+	echo $libro->firstChild->nodevalue.”<br>”;
+}
+
+Para recuperar los atributos de los nodos esta el metodo getAttribute()
+
+Ejemplo
+
+<?php
+$biblioteca = new domDocument;
+$biblioteca ? preserveWhiteSpace = false;
+$biblioteca ? load(“biblioteca.xml”);
+$temas = $biblioteca ? getElementsByTagname(“tema”);
+foreach ($temas as $tema) {
+	echo $tema ? getAttribute(“id”);
+}
+?>
+
+El resultado es el nombre del tema o temas que esten almacenados
+
+Para ver ejercicio integrador, ir a la pagina 257.
+
+Para ver como escribir archivos XML con DOM, y para ver como modificar archivos XML, ver paginas 257 a 259.
+
+SimpleXML
+
+SimpleXML permite leer un fichero completo con una sola instrucción,e inmediatamente despues, poder leer los datos como un conjunto de variables PHP.
+A diferencia de SAX y DOM en solo 10 lineas de codigo podemos extraer todos los datos necesarios:
+
+La funcion simplexml_load_file() crea un objeto con el archivo SML que pase como argumento. Para extraer el contenido crea una estrucrua de bucles foreach. Asi:
+
+<?php
+$biblioteca = simplexml_load_file(“biblioteca.xml”);
+foreach ($biblioteca->tema as $tema) {
+	echo “Tema es”.$tema[“id”].”<br>”;
+	foreach ($tema->libro as $libro) {
+	echo “<b> “.$libro->titulo.”</b>-”;
+	echo $libro-> autor.”<br>”;
+}
+}
+?>

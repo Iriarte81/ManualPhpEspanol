@@ -1,0 +1,167 @@
+SESIONES, COOKIES Y HEADERS
+
+SESIONES
+
+Una sesion es un periodo de tiempo durante el cual una persona determinada ve un numbero de fiertentes paginas web de un deeterminado dominio.
+
+session_start() registra una sesion en el servidor y la identifica con 32 caracteres llamada SID. Cada persona que entre a la pagina obtendra un SID diferente. session_start() debe incluirse en todas las paginas que formen parte de la aplicación, porque tambien se encarga de mantener la sesion activa. Ya que session_start() utiliza cabeceras para pasar la info de sesion, su utilizacion debe estar siempre antes de enviar cualquier etiqueta html, dato o espacio en blanco.
+
+$_SESSION es un array que permite almacenar datos de cualquier tipo para recuperarlos en otras paginas con la misma sesion. Ejemplo
+
+<?php
+session_start();
+?>
+<html>
+<body>
+<?php
+$_SESSION[“nombre”] = “Luis Miguel Cabezas”;
+$_SESSION[“edad”] = 29;
+echo “<a href=\“sesion2.php\”>Pasar variables</a>”;
+?>
+</body>
+</html>
+
+y sesion2.php:
+
+<?php
+session_start()
+?>
+<html>
+<body>
+<?php
+echo “Mostrar las variables de sesion<br>”;
+foreach ($_SESSION as $indice => $valor) {
+	echo “$indice: $valor<br>”;
+}
+echo “Mostrar las cookies<br>”;
+foreach ($_COOKIE as $indice => $valor) {
+	echo “$indice: $valor<br>”;
+}
+?>
+
+Asi podremos obtener toods los varlores pasados por el primer script. Las cookies son pequeños contenidos que se almacenan en el ordenador local, se usan para guardar las preferencias de algun usuario o algun dato interesante. Son variables que se guardan en el ordenador local del usuario y pueden ser recatadas por PHP en alguna otra ocasión en que se necesite.
+
+Un problema muy comun es que el usuario tenga desactivada la opcion de permitir cookies en su navegador. El problema es que el ordenador local no aceptara nuestra variable PHPSESSID y todas las paginas creeran que no existe sesion activa. Esto lo resolvemos asi:
+
+<?php
+session_start();
+?>
+<html>
+<body>
+<?php
+$_SESSION[“nombre”] = “Luis Miguel Cabezas”;
+$_SESSION[“edad”] = 29;
+$id_sesion = SID
+echo “<a href=\“sesion2.php?$id_sesion\”>Pasar variables</a>”;
+?>
+</body>
+</html>
+
+Asi pasamos en todos los enlaces el identificador de sesion
+
+Nota sobre configuracion de PHP5 en pag. 241.
+
+Funciones para el manejo de sesiones
+
+session_start() inicia una sesion y permite almacenar variables en $_SESSION
+session_destroy() elimina todas las variables de la sesion.
+session_name() devuelve el nombre de sesión, normalmente PHPSESSIONID
+session_id() deveuleve los 32 caracteres de SID que forman el identificador de sesión.
+
+Ejemplo par usar sesiones orientado a objetos:
+
+<?php
+class sesión
+{
+	function__constructor()
+{
+	session_start();
+}
+public function set($nombre,$valor)
+{
+	$_SESION[$nombre] = $valor;
+}
+public function get($nombre)
+{
+	if (isset($_SESSION[$nombre])) {
+		return $_SESSION[$nombre];
+	} else {
+		return false;
+	}
+}
+public function borrar_variable($nombre)
+{
+	unset ($_SESSION[$nombre]);
+}
+public function borrarsesion()
+{
+	$_SESSION = array();
+	session_destroy();
+}
+}
+?>
+
+Con esta clase creada ahora podemos:
+
+<?php
+require_once(“clase_sesion.php”);
+$sesion = new sesion();
+?>
+<html>
+<body>
+<?php
+$sesion->set(“nombre”,”Luis Miguel Cabezas”);
+$sesion->set(“edad”, 29);
+$id_sesion = SID
+echo “<a href=\”sesion2.php?$id_sesion\”>Pasar variables</a>”;
+?>
+</body>
+</html>
+
+
+COOKIES
+
+
+Una cookie es una parte de informacion almacenada en el ordenador local, debe contener un nombre y un valor.
+
+Setcookie() registra las cookies durante el envio de cabeceras. Para recuperar el valor, se necesita usar la variable super-global $_COOKIE
+
+setcookie() normalmente tiene dos argumentos, el nombre de la variable y el valor, ademas podemos pasar varios otros parametros que permiten dar tiempo de vida a las variables, entre otras cosas
+
+argumentos de la funcion setcookie():
+
+nombre, el nombre de la variable cookie
+
+valor, el valor que debe alamacenar la variable, si este valor no se indica la cookie sera automaticamente borrada (carácter)
+
+tiempo de vida, (entero) si el tiempo de vida es 0 la cookie nunca expirara, el valor hay que asignarlo en tiempo absoluto, como el devuelto por la funcion mktime()
+
+ruta, (entero) permite distinguir entre dos variables de mismo nombre, pero llamadas de distinta ruta
+
+dominio, (carácter) asegura el dominio de servidor que puede leer la cookie
+
+secure, (entero) si el argumento es 1, la cocokie solo sera enviada a traves de una conexión segura https
+
+Borrar una cookie
+
+Si llama a setcookie(), con los mismos argumentos, excepto el valor, se eliminara
+
+Ver ejemplo orientado a objetos, paginas 244 y 245.
+
+
+HEADERS, CABECERAS HTTP
+
+Es posible enviar cabeceras con la funcion header(), tan solo toma como argumento un conjunto de caracteres que sera la cabecera a enviar.
+
+Ejemplo
+
+<?php
+if (isset($_GET[“usuario”]) && $_GET[“usuario”] == “Luis”) {
+	header(“Location: http://www.luisyfernanda.net”);
+}
+?>
+<html>
+<body>
+Si ve esta pagina, su nombre no es Luis
+</body>
+</html>
